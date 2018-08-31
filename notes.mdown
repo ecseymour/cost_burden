@@ -1,0 +1,20 @@
+# population loss and cost burden
+
+__motivation__
+
+As places lose population, so too do they lose demand for housing, lowering rents and home prices. This might lead one to assume housing is more affordable in shrinking places. Selective outmigration, however, often means that places losing population retain more lower-income households, for whom ostensibly low-cost housing is unaffordable. It is also the case that rent cannot fall below a certain threshold, as landlords have fixed housing costs, thus rent cannot fall forever. Inadeqate demand in these cases leads to abandonment, not less-costly housing. The relationship between population loss and declining home values and abandonment has been studied extensively, but there is little empirical work on the housing cost burden of remaining low- and moderate-income households. Housing affordability crisis in fast-growing cities regularly make news headlines and are the subject of academic research. This study, on the other hand, examines cost burden in shrinking places, which the popular press often describes as awash in affordable housing. [$500 houses in Detroit, etc.]
+
+__unit of analysis__
+
+start w/ counties to build-out existing work on diversity, income inequality, and segregation. compare gaining and losing counties.
+
+__measures__
+
+The central construct is _affordability_. This is most often operationalized as percent of income spent toward housing. This is available by tenure and income. I am particularly interested in low-income households. One issue in comparing trends over time is that income tresholds are not directly comparable across censuses. I could instead count cost-burdened households using linear interpolation to count households below different AMI thresholds.
+
+Cost burden itself might have no association with pop. change, but the mechanisms through which the level and trend of cost burden are produced may be different. In pop. loss places, I would expect burden to be a function of income falling faster than rent. In growing places, I would expect cost burden to be a function of rent growing faster than income. I need to look at these trends independent of census calculations for cost burden. I want median household income and median gross rent for all places. What other income measures are available? Quintiles are available in ACS, but not 2000 Census. Median household income _by tenure_.
+
+* B25118: TENURE BY HOUSEHOLD INCOME IN THE PAST 12 MONTHS (IN 2016 INFLATION-ADJUSTED DOLLARS)
+* B25119: MEDIAN HOUSEHOLD INCOME THE PAST 12 MONTHS (IN 2016 INFLATION-ADJUSTED DOLLARS) BY TENURE. HCT012 is comparable table in Census 2000	
+* B25074. Household Income by Gross Rent as a Percentage of Household Income in the Past 12 Months. 
+
