@@ -1,8 +1,11 @@
+'''
+file imports all tables needed for cost-burden project
+'''
+
 import sqlite3 as sql
 import csv
 import re
 import glob
-
 
 # connect to db
 db = "/home/eric/Documents/franklin/cost_burden/generated_data/cost_burden.sqlite"
@@ -11,13 +14,13 @@ con.text_factory=str
 cur = con.cursor()
 
 
-path = "/home/eric/Documents/franklin/cost_burden/source_data/nhgis0087_csv/*.csv"
+path = "/home/eric/Documents/franklin/cost_burden/source_data/nhgis0097_csv/*.csv"
 for fname in glob.glob(path):
 	print "+" * 60
 	print fname
 	codebook = fname.replace('.csv', '_codebook.txt')
 	print codebook
-	tablename = fname.split('/')[-1].split('.')[0]
+	tablename = fname.split('/')[-1].split('.')[0][10:]
 	print tablename
 
 	field_only = []
@@ -30,7 +33,7 @@ for fname in glob.glob(path):
 		for line in f:
 			if "---" in line:
 				break
-			if line.startswith(' '*8) and tablename != 'nhgis0087_ds94_1970_place':
+			if line.startswith(' '*8) and tablename != 'ds94_1970_place':
 				# print line				
 				field_name = line.strip().split(":")[0]
 				if any(i.isdigit() for i in field_name):
@@ -42,7 +45,7 @@ for fname in glob.glob(path):
 					field_only.append(field_name)
 					schema.append(field)
 
-			if line.startswith(' '*4) and tablename == 'nhgis0087_ds94_1970_place':
+			if line.startswith(' '*4) and tablename == 'ds94_1970_place':
 				# print line				
 				field_name = line.strip().split(":")[0]
 				if any(i.isdigit() for i in field_name):
@@ -73,7 +76,7 @@ for fname in glob.glob(path):
 			cur.execute(insert_tmpl,row)
 
 	con.commit()
-	if tablename == 'nhgis0087_ts_nominal_place':
+	if tablename == 'ts_nominal_place':
 		cur.execute("CREATE INDEX idx_{}_gisjoin ON {}('nhgiscode');".format(tablename, tablename))
 		years = ['1970', '1980', '1990', '2000', '2012']
 		for y in years:

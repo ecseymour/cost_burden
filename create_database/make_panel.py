@@ -14,6 +14,7 @@ or collect places that exist across all periods, then collect data for those pla
 import sqlite3 as sql
 import pandas as pd
 from collections import OrderedDict
+from matplotlib import pyplot as plt
 
 # connect to db
 db = "/home/eric/Documents/franklin/cost_burden/generated_data/cost_burden.sqlite"
@@ -27,7 +28,7 @@ code_dict = OrderedDict()
 cur.execute('''
 	SELECT NHGISCODE, PLACE, GJOIN1980, GJOIN1990, GJOIN2000, GJOIN2010, GJOIN2012,
 	STATE, AV0AA1970
-	FROM nhgis0087_ts_nominal_place
+	FROM ts_nominal_place
 	WHERE AV0AA1970 <> '' 
 	AND AV0AA1980 <> ''
 	AND AV0AA1990 <> ''
@@ -57,8 +58,8 @@ for k, v in code_dict.iteritems():
 	cur.execute('''
 	SELECT A.GISJOIN,
 	A.C9H001 AS pop,
-	B.DFK001* 3.21 AS rent,
-	C.DPO002 * 3.21 AS income,
+	B.DFK001* 3.15836 AS rent,
+	C.DPO002 * 3.15836 AS income,
 	(D.DKY006 + D.DKY007 + D.DKY008 + D.DKY009 + D.DKY010) * 1.0 /
 	(D.DKY001 + D.DKY002 + D.DKY003 + D.DKY004 + D.DKY005 + D.DKY006 + D.DKY007 + D.DKY008 + D.DKY009 + D.DKY010) * 100 AS burden,
 	E.A43AB1980 * 1.0 / (E.A43AB1980 + E.A43AA1980) * 100 AS vacrate,
@@ -66,14 +67,16 @@ for k, v in code_dict.iteritems():
 	E.B37AB1980 * 1.0 / (E.B37AB1980 + E.B37AA1980) * 100 AS tenure,
 	E.B69AC1980 * 1.0 / (E.B69AC1980 + E.B69AB1980 + E.B69AA1980) * 100 AS BArate,
 	E.AX7AA1980 * 1.0 / (E.AX7AB1980 + E.AX7AA1980) * 100 AS povrate,
-	F.C8J001 AS medval,
-	(B.DEQ007 + B.DEQ006) * 1.0 / (B.DEQ007 + B.DEQ006 + B.DEQ004 + B.DEQ003 + B.DEQ002 + B.DEQ001) * 100 AS bltpre1950
-	FROM nhgis0087_ds105_1980_place AS A
-	JOIN nhgis0087_ds107_1980_place AS B ON A.GISJOIN = B.GISJOIN
-	JOIN nhgis0087_ds109_1980_place AS C ON A.GISJOIN = C.GISJOIN 
-	JOIN nhgis0087_ds108_1980_place AS D ON A.GISJOIN = D.GISJOIN
-	JOIN nhgis0087_ts_nominal_place AS E ON A.GISJOIN = E.GJOIN1980
-	JOIN nhgis0087_ds104_1980_place AS F ON A.GISJOIN = F.GISJOIN
+	F.C8J001 * 3.15836 AS medval,
+	(B.DEQ007 + B.DEQ006) * 1.0 / (B.DEQ007 + B.DEQ006 + B.DEQ004 + B.DEQ003 + B.DEQ002 + B.DEQ001) * 100 AS bltpre1950,
+	E.AT5AB1980 * 1.0 / (E.AT5AB1980 + E.AT5AA1980) * 100 AS pctForeignBorn,
+	(F.C8H005 + F.C8H006) * 1.0 / (F.C8H004 + F.C8H005 + F.C8H006) * 100 AS pctOvercrowded
+	FROM ds105_1980_place AS A
+	JOIN ds107_1980_place AS B ON A.GISJOIN = B.GISJOIN
+	JOIN ds109_1980_place AS C ON A.GISJOIN = C.GISJOIN 
+	JOIN ds108_1980_place AS D ON A.GISJOIN = D.GISJOIN
+	JOIN ts_nominal_place AS E ON A.GISJOIN = E.GJOIN1980	
+	JOIN ds104_1980_place AS F ON A.GISJOIN = F.GISJOIN
 	WHERE A.GISJOIN = ?;
 	''', ([v['GJOIN1980']]))
 	results = cur.fetchall()
@@ -89,13 +92,15 @@ for k, v in code_dict.iteritems():
 		code_dict[k]['povrate80'] = row[9]
 		code_dict[k]['medHmVal80'] = row[10]
 		code_dict[k]['bltPre195080'] = row[11]
+		code_dict[k]['pctFrnBrn80'] = row[12]
+		code_dict[k]['pctOvrCrwd80'] = row[13]
 #############################################################
 # 1990
 for k, v in code_dict.iteritems():
 	cur.execute('''
 	SELECT A.GISJOIN,
 	A.ET1001 AS pop,
-	B.EYU001 * 1.95 AS rent,
+	B.EYU001 * 1.91410 AS rent,
 	(B.EY2004 + B.EY2005 + B.EY2010 + B.EY2011 + B.EY2016 + B.EY2017 + B.EY2022 + B.EY2023 + B.EY2028 + B.EY2029) * 1.0 /
 	(B.EY2004 + B.EY2005 + B.EY2010 + B.EY2011 + B.EY2016 + B.EY2017 + B.EY2022 + B.EY2023 + B.EY2028 + B.EY2029 + 
 	B.EY2001 + B.EY2002 + B.EY2003 + B.EY2007 + B.EY2008 + B.EY2009 + B.EY2013 + B.EY2014 + B.EY2015 + B.EY2019 + 
@@ -105,11 +110,13 @@ for k, v in code_dict.iteritems():
 	E.B37AB1990 * 1.0 / (E.B37AB1990 + E.B37AA1990) * 100 AS tenure,
 	E.B69AC1990 * 1.0 / (E.B69AC1990 + E.B69AB1990 + E.B69AA1990) * 100 AS BArate,
 	E.AX7AA1990 * 1.0 / (E.AX7AB1990 + E.AX7AA1990) * 100 AS povrate,
-	A.EST001 AS medval,
-	(B.EX7008 + B.EX7007) * 1.0 / (B.EX7008 + B.EX7007 + B.EX7006 + B.EX7005 + B.EX7004 + B.EX7003 + B.EX7002 + B.EX7001) * 100 AS bltpre1950
-	FROM nhgis0087_ds120_1990_place AS A
-	JOIN nhgis0087_ds123_1990_place AS B ON A.GISJOIN = B.GISJOIN
-	JOIN nhgis0087_ts_nominal_place AS E ON A.GISJOIN = E.GJOIN1990
+	A.EST001 * 1.91410 AS medval,
+	(B.EX7008 + B.EX7007) * 1.0 / (B.EX7008 + B.EX7007 + B.EX7006 + B.EX7005 + B.EX7004 + B.EX7003 + B.EX7002 + B.EX7001) * 100 AS bltpre1950,
+	E.AT5AB1990 * 1.0 / (E.AT5AB1990 + E.AT5AA1990) * 100 AS pctForeignBorn,
+	(A.ESQ008 + A.ESQ009 + A.ESQ010) * 1.0 / (A.ESQ006 + A.ESQ007 + A.ESQ008 + A.ESQ009 + A.ESQ010) * 100 AS pctOvercrowded
+	FROM ds120_1990_place AS A
+	JOIN ds123_1990_place AS B ON A.GISJOIN = B.GISJOIN
+	JOIN ts_nominal_place AS E ON A.GISJOIN = E.GJOIN1990
 	WHERE A.GISJOIN = ?;
 	''', ([v['GJOIN1990']]))
 	results = cur.fetchall()
@@ -124,14 +131,16 @@ for k, v in code_dict.iteritems():
 		code_dict[k]['povrate90'] = row[8]
 		code_dict[k]['medHmVal90'] = row[9]
 		code_dict[k]['bltPre195090'] = row[10]
+		code_dict[k]['pctFrnBrn90'] = row[11]
+		code_dict[k]['pctOvrCrwd90'] = row[12]
 #############################################################
 # 2000
 for k, v in code_dict.iteritems():
 	cur.execute('''
 	SELECT A.GISJOIN,
 	A.GHC001 AS pop,
-	A.GBO001 * 1.46 AS rent,
-	A.GED002 * 1.46 AS income,
+	A.GBO001 * 1.47588 AS rent,
+	A.GED002 * 1.47588 AS income,
 	(A.GBW006 + A.GBW007 + A.GBW008 + A.GBW009) * 1.0 / 
 	(A.GBW001 + A.GBW002 + A.GBW003 + A.GBW004 + A.GBW005 + A.GBW006 + A.GBW007 + A.GBW008 + A.GBW009) * 100 AS burden,
 	E.A43AB2000 * 1.0 / (E.A43AB2000 + E.A43AA2000) * 100 AS vacrate,
@@ -139,10 +148,12 @@ for k, v in code_dict.iteritems():
 	E.B37AB2000 * 1.0 / (E.B37AB2000 + E.B37AA2000) * 100 AS tenure,
 	E.B69AC2000 * 1.0 / (E.B69AC2000 + E.B69AB2000 + E.B69AA2000) * 100 AS BArate,
 	E.AX7AA2000 * 1.0 / (E.AX7AB2000 + E.AX7AA2000) * 100 AS povrate,
-	A.GB7001 AS medval,
-	(A.GAJ009 + A.GAJ008) * 1.0 / (A.GAJ009 + A.GAJ008 + A.GAJ007 + A.GAJ006 + A.GAJ005 + A.GAJ004 + A.GAJ003 + A.GAJ002 + A.GAJ001) * 100 AS bltpre1950
-	FROM nhgis0087_ds151_2000_place AS A
-	JOIN nhgis0087_ts_nominal_place AS E ON A.GISJOIN = E.GJOIN2000
+	A.GB7001 * 1.47588 AS medval,
+	(A.GAJ009 + A.GAJ008) * 1.0 / (A.GAJ009 + A.GAJ008 + A.GAJ007 + A.GAJ006 + A.GAJ005 + A.GAJ004 + A.GAJ003 + A.GAJ002 + A.GAJ001) * 100 AS bltpre1950,
+	E.AT5AB2000 * 1.0 / (E.AT5AB2000 + E.AT5AA2000) * 100 AS pctForeignBorn,
+	(A.F90008 + A.F90009 + A.F90010) * 1.0 / (A.F90006 + A.F90007 + A.F90008 + A.F90009 + A.F90010) * 100 AS pctOvercrowded
+	FROM ds151_2000_place AS A
+	JOIN ts_nominal_place AS E ON A.GISJOIN = E.GJOIN2000
 	WHERE GISJOIN = ?;
 	''', ([v['GJOIN2000']]))
 	results = cur.fetchall()
@@ -158,14 +169,16 @@ for k, v in code_dict.iteritems():
 		code_dict[k]['povrate00'] = row[9]
 		code_dict[k]['medHmVal00'] = row[10]
 		code_dict[k]['bltPre195000'] = row[11]
+		code_dict[k]['pctFrnBrn00'] = row[12]
+		code_dict[k]['pctOvrCrwd00'] = row[13]
 #############################################################
 # 2012
 for k, v in code_dict.iteritems():
 	cur.execute('''
 	SELECT A.GISJOIN,
 	A.QSPE001 AS pop,
-	A.QZTE001 * 1.07 AS rent,
-	B.RGRE003 * 1.07 AS income,
+	A.QZTE001 * 1.06963 AS rent,
+	B.RGRE003 * 1.06963 AS income,
 	(A.QZZE007 + A.QZZE008 + A.QZZE009 + A.QZZE010) * 1.0 /
 	(A.QZZE001 - A.QZZE011) * 100 AS burden,
 	E.A43AB2010 * 1.0 / (E.A43AB2010 + E.A43AA2010) * 100 AS vacrate,
@@ -173,11 +186,13 @@ for k, v in code_dict.iteritems():
 	E.B37AB2010 * 1.0 / (E.B37AB2010 + E.B37AA2010) * 100 AS tenure,
 	E.B69AC2000 * 1.0 / (E.B69AC2000 + E.B69AB2000 + E.B69AA2000) * 100 AS BArate,
 	E.AX7AA2000 * 1.0 / (E.AX7AB2000 + E.AX7AA2000) * 100 AS povrate,
-	A.QZ6E001 AS medval,
-	(A.QY1E010 + A.QY1E009) * 1.0 / A.QY1E001 * 100 AS bltpre1950
-	FROM nhgis0087_ds191_20125_2012_place AS A
-	JOIN nhgis0087_ds192_20125_2012_place AS B ON A.GISJOIN = B.GISJOIN
-	JOIN nhgis0087_ts_nominal_place AS E ON A.GISJOIN = E.GJOIN2012
+	A.QZ6E001 * 1.06963 AS medval,
+	(A.QY1E010 + A.QY1E009) * 1.0 / A.QY1E001 * 100 AS bltpre1950,
+	E.AT5AB125 * 1.0 / (E.AT5AB125 + E.AT5AA125) * 100 AS pctForeignBorn,
+	(A.QYOE011 + A.QYOE012 + A.QYOE013) * 1.0 / (A.QYOE009 + A.QYOE010 + A.QYOE011 + A.QYOE012 + A.QYOE013) * 100 AS pctOvercrowded 
+	FROM ds191_20125_2012_place AS A
+	JOIN ds192_20125_2012_place AS B ON A.GISJOIN = B.GISJOIN
+	JOIN ts_nominal_place AS E ON A.GISJOIN = E.GJOIN2012
 	WHERE A.GISJOIN = ?;
 	''', ([v['GJOIN2012']]))
 	results = cur.fetchall()
@@ -193,6 +208,8 @@ for k, v in code_dict.iteritems():
 		code_dict[k]['povrate125'] = row[9]
 		code_dict[k]['medHmVal125'] = row[10]
 		code_dict[k]['bltPre1950125'] = row[11]
+		code_dict[k]['pctFrnBrn125'] = row[12]
+		code_dict[k]['pctOvrCrwd125'] = row[13]
 #############################################################
 # 2017
 for k, v in code_dict.iteritems():
@@ -209,9 +226,11 @@ for k, v in code_dict.iteritems():
 	(A.AH04E022 + A.AH04E023 + A.AH04E024 + A.AH04E025) * 1.0 / A.AH04E001 * 100 AS BArate,
 	B.AIFOE002 * 1.0 / B.AIFOE001 * 100 AS povrate,
 	A.AH53E001 AS medval,
-	(A.AH4ZE011 + A.AH4ZE010) * 1.0 / A.AH4ZE001 * 100 AS bltpre1950
-	FROM nhgis0087_ds233_20175_2017_place AS A
-	JOIN nhgis0087_ds234_20175_2017_place AS B ON A.GISJOIN = B.GISJOIN
+	(A.AH4ZE011 + A.AH4ZE010) * 1.0 / A.AH4ZE001 * 100 AS bltpre1950,
+	B.AH9IE003 * 1.0 / B.AH9IE001 * 100 as pctForeignBorn,
+	(A.AH4NE011 + A.AH4NE012 + A.AH4NE013) * 1.0 / A.AH4NE008 * 100 AS pctOvercrowded
+	FROM ds233_20175_2017_place AS A
+	JOIN ds234_20175_2017_place AS B ON A.GISJOIN = B.GISJOIN
 	WHERE A.GISJOIN = ?;
 	''', ([v['GJOIN2012']]))
 	results = cur.fetchall()
@@ -227,6 +246,8 @@ for k, v in code_dict.iteritems():
 		code_dict[k]['povrate175'] = row[9]
 		code_dict[k]['medHmVal175'] = row[10]
 		code_dict[k]['bltPre1950175'] = row[11]
+		code_dict[k]['pctFrnBrn175'] = row[12]
+		code_dict[k]['pctOvrCrwd175'] = row[13]
 #############################################################
 con.close()
 df = pd.DataFrame.from_dict(code_dict, orient='index')
@@ -248,3 +269,5 @@ print df.columns
 print df[['burd80', 'burd90', 'burd00', 'burd125', 'burd175']].describe()
 
 print df[['renterHH80', 'renterHH90', 'renterHH00', 'renterHH125', 'renterHH175']].describe()
+
+# df.plot.scatter('pctFrnBrn175', 'pctOvrCrwd175');plt.show()

@@ -22,7 +22,9 @@ for y in years:
 			'BArate{}'.format(y),
 			'povrate{}'.format(y),
 			'medHmVal{}'.format(y),
-			'bltPre1950{}'.format(y)
+			'bltPre1950{}'.format(y),
+			'pctFrnBrn{}'.format(y),
+			'pctOvrCrwd{}'.format(y)
 			]
 	if y=='80':
 		final_df = df[cols].copy(deep=True)
@@ -37,7 +39,9 @@ for y in years:
 			'BArate',
 			'povrate',
 			'medHmVal',
-			'bltPre1950'
+			'bltPre1950',
+			'pctFrnBrn',
+			'pctOvrCrwd175'
 			]
 		final_df['year'] = '1980'
 		final_df.index = final_df['NHGISJOIN'] + final_df['year']
@@ -55,7 +59,9 @@ for y in years:
 			'BArate',
 			'povrate',
 			'medHmVal',
-			'bltPre1950'
+			'bltPre1950',
+			'pctFrnBrn',
+			'pctOvrCrwd175'
 			]
 		if y=='90':
 			y = '1990'
