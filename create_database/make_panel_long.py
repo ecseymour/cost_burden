@@ -5,7 +5,7 @@ import pandas as pd
 
 inFile = "/home/eric/Documents/franklin/cost_burden/generated_data/rent_burden_data.csv"
 df = pd.read_csv(inFile)
-df['inc90'] = None
+# df['inc90'] = None
 
 years = ['80', '90', '00', '125', '175']
 
@@ -24,7 +24,11 @@ for y in years:
 			'medHmVal{}'.format(y),
 			'bltPre1950{}'.format(y),
 			'pctFrnBrn{}'.format(y),
-			'pctOvrCrwd{}'.format(y)
+			'pctOvrCrwd{}'.format(y),
+			'pctUnemp{}'.format(y),
+			'pctBlack{}'.format(y),
+			'pctHisp{}'.format(y),
+			'pctAlone{}'.format(y)
 			]
 	if y=='80':
 		final_df = df[cols].copy(deep=True)
@@ -41,7 +45,11 @@ for y in years:
 			'medHmVal',
 			'bltPre1950',
 			'pctFrnBrn',
-			'pctOvrCrwd175'
+			'pctOvrCrwd',
+			'pctUnemp',
+			'pctBlack',
+			'pctHisp',
+			'pctAlone'
 			]
 		final_df['year'] = '1980'
 		final_df.index = final_df['NHGISJOIN'] + final_df['year']
@@ -61,7 +69,11 @@ for y in years:
 			'medHmVal',
 			'bltPre1950',
 			'pctFrnBrn',
-			'pctOvrCrwd175'
+			'pctOvrCrwd',
+			'pctUnemp',
+			'pctBlack',
+			'pctHisp',
+			'pctAlone'
 			]
 		if y=='90':
 			y = '1990'

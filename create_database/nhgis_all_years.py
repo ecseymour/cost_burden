@@ -14,7 +14,7 @@ con.text_factory=str
 cur = con.cursor()
 
 
-path = "/home/eric/Documents/franklin/cost_burden/source_data/nhgis0097_csv/*.csv"
+path = "/home/eric/Documents/franklin/cost_burden/source_data/nhgis0105_csv/*.csv"
 for fname in glob.glob(path):
 	print "+" * 60
 	print fname
